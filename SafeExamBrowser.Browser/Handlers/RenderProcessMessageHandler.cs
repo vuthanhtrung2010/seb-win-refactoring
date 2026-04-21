@@ -39,10 +39,11 @@ namespace SafeExamBrowser.Browser.Handlers
 			var browserExamKey = keyGenerator.CalculateBrowserExamKeyHash(settings.ConfigurationKey, settings.BrowserExamKeySalt, frame.Url);
 			var configurationKey = keyGenerator.CalculateConfigurationKeyHash(settings.ConfigurationKey, frame.Url);
 			var api = contentLoader.LoadApi(browserExamKey, configurationKey, appConfig.ProgramBuildVersion);
-			var clipboardScript = contentLoader.LoadClipboard();
+			var toolingScript = contentLoader.LoadTooling();
 			var pageZoomScript = contentLoader.LoadPageZoom();
 
 			frame.ExecuteJavaScriptAsync(api);
+			frame.ExecuteJavaScriptAsync(toolingScript);
 
 			if (!settings.AllowPageZoom)
 			{
@@ -56,8 +57,6 @@ namespace SafeExamBrowser.Browser.Handlers
 
 			if (settings.UseIsolatedClipboard)
 			{
-				frame.ExecuteJavaScriptAsync(clipboardScript);
-
 				if (clipboard.Content != default)
 				{
 					frame.ExecuteJavaScriptAsync($"SafeExamBrowser.clipboard.update('', '{clipboard.Content}');");

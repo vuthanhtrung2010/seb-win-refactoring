@@ -20,12 +20,15 @@ using SafeExamBrowser.Settings;
 using SafeExamBrowser.Settings.Security;
 using SafeExamBrowser.UserInterface.Contracts.MessageBox;
 using SafeExamBrowser.UserInterface.Contracts.Windows;
+using System;
 
 namespace SafeExamBrowser.Runtime.UnitTests.Operations.Session
 {
 	[TestClass]
 	public class VirtualMachineOperationTests
 	{
+		private const string OVERRIDE_ENV_VAR = "SEB_DISABLE_VM_CHECK";
+
 		private RuntimeContext context;
 		private Mock<IVirtualMachineDetector> detector;
 		private Mock<ILogger> logger;
@@ -35,6 +38,8 @@ namespace SafeExamBrowser.Runtime.UnitTests.Operations.Session
 		[TestInitialize]
 		public void Initialize()
 		{
+			Environment.SetEnvironmentVariable(OVERRIDE_ENV_VAR, null);
+
 			context = new RuntimeContext();
 			detector = new Mock<IVirtualMachineDetector>();
 			logger = new Mock<ILogger>();
@@ -51,6 +56,12 @@ namespace SafeExamBrowser.Runtime.UnitTests.Operations.Session
 				Mock.Of<IText>());
 
 			sut = new VirtualMachineOperation(dependencies, detector.Object);
+		}
+
+		[TestCleanup]
+		public void Cleanup()
+		{
+			Environment.SetEnvironmentVariable(OVERRIDE_ENV_VAR, null);
 		}
 
 		[TestMethod]
@@ -149,6 +160,19 @@ namespace SafeExamBrowser.Runtime.UnitTests.Operations.Session
 			detector.VerifyNoOtherCalls();
 			logger.VerifyNoOtherCalls();
 
+			Assert.AreEqual(OperationResult.Success, result);
+		}
+
+		[TestMethod]
+		public void Perform_MustIgnoreVirtualMachineDetectionIfCheckIsDisabledByEnvironmentVariable()
+		{
+			Environment.SetEnvironmentVariable(OVERRIDE_ENV_VAR, "1");
+			context.Next.Settings.Security.VirtualMachinePolicy = VirtualMachinePolicy.Deny;
+			detector.Setup(d => d.IsVirtualMachine()).Returns(true);
+
+			var result = sut.Perform();
+
+			detector.Verify(d => d.IsVirtualMachine(), Times.Never);
 			Assert.AreEqual(OperationResult.Success, result);
 		}
 	}

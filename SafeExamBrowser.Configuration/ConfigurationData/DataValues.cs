@@ -268,7 +268,7 @@ namespace SafeExamBrowser.Configuration.ConfigurationData
 			settings.Security.AllowStickyKeys = false;
 			settings.Security.AllowTermination = true;
 			settings.Security.AllowWindowCapture = false;
-			settings.Security.ClipboardPolicy = ClipboardPolicy.Isolated;
+			settings.Security.ClipboardPolicy = ClipboardPolicy.Allow;
 			settings.Security.DisableSessionChangeLockScreen = false;
 			settings.Security.KioskMode = KioskMode.CreateNewDesktop;
 			settings.Security.VerifyCursorConfiguration = true;

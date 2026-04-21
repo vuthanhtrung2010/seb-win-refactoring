@@ -247,6 +247,9 @@
     <EmbeddedResource Include="Content\Clipboard.js" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Content\Tooling.js" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Content\PageZoom.js" />
   </ItemGroup>
   <ItemGroup />

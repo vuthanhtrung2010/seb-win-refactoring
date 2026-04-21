@@ -1,0 +1,1 @@
+console.log('Tooling placeholder script loaded.');
