@@ -10,6 +10,8 @@ on:
 jobs:
   build-installer:
     runs-on: windows-2022
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout
@@ -24,15 +26,50 @@ jobs:
       - name: Restore
         run: nuget restore SafeExamBrowser.sln
 
-      - name: Build x64 installer
+      - name: Build x64 dependencies
         shell: pwsh
         run: |
-          msbuild SafeExamBrowser.sln /m /p:Configuration=Release /p:Platform=x64 /p:langversion=latest /p:SignOutput=false
+          $projects = @(
+            'SafeExamBrowser.Client\SafeExamBrowser.Client.csproj',
+            'SafeExamBrowser.Runtime\SafeExamBrowser.Runtime.csproj',
+            'SafeExamBrowser.ResetUtility\SafeExamBrowser.ResetUtility.csproj',
+            'SafeExamBrowser.Service\SafeExamBrowser.Service.csproj',
+            'SebWindowsConfig\SebWindowsConfig.csproj'
+          )
 
-      - name: Build x86 installer and bundle
+          foreach ($project in $projects) {
+            msbuild $project /m /p:Configuration=Release /p:Platform=x64 /p:langversion=latest
+          }
+
+      - name: Build x64 setup MSI
         shell: pwsh
         run: |
-          msbuild SafeExamBrowser.sln /m /p:Configuration=Release /p:Platform=x86 /p:langversion=latest /p:SignOutput=false
+          msbuild Setup\Setup.wixproj /m /p:Configuration=Release /p:Platform=x64 /p:SignOutput=false /p:BuildProjectReferences=false
+
+      - name: Build x86 dependencies
+        shell: pwsh
+        run: |
+          $projects = @(
+            'SafeExamBrowser.Client\SafeExamBrowser.Client.csproj',
+            'SafeExamBrowser.Runtime\SafeExamBrowser.Runtime.csproj',
+            'SafeExamBrowser.ResetUtility\SafeExamBrowser.ResetUtility.csproj',
+            'SafeExamBrowser.Service\SafeExamBrowser.Service.csproj',
+            'SebWindowsConfig\SebWindowsConfig.csproj'
+          )
+
+          foreach ($project in $projects) {
+            msbuild $project /m /p:Configuration=Release /p:Platform=x86 /p:langversion=latest
+          }
+
+      - name: Build x86 setup MSI
+        shell: pwsh
+        run: |
+          msbuild Setup\Setup.wixproj /m /p:Configuration=Release /p:Platform=x86 /p:SignOutput=false /p:BuildProjectReferences=false
+
+      - name: Build x86 setup bundle
+        shell: pwsh
+        run: |
+          msbuild SetupBundle\SetupBundle.wixproj /m /p:Configuration=Release /p:Platform=x86 /p:SignOutput=false /p:BuildProjectReferences=false
 
       - name: Upload MSI and bundle
         uses: actions/upload-artifact@v4
