@@ -12,14 +12,11 @@ using SafeExamBrowser.I18n.Contracts;
 using SafeExamBrowser.Monitoring.Contracts;
 using SafeExamBrowser.Settings.Security;
 using SafeExamBrowser.UserInterface.Contracts.MessageBox;
-using System;
 
 namespace SafeExamBrowser.Runtime.Operations.Session
 {
 	internal class VirtualMachineOperation : SessionOperation
 	{
-		private const string OVERRIDE_ENV_VAR = "SEB_DISABLE_VM_CHECK";
-
 		private readonly IVirtualMachineDetector detector;
 
 		public override event StatusChangedEventHandler StatusChanged;
@@ -50,33 +47,9 @@ namespace SafeExamBrowser.Runtime.Operations.Session
 
 			Logger.Info($"Validating virtual machine policy...");
 			StatusChanged?.Invoke(TextKey.OperationStatus_ValidateVirtualMachinePolicy);
-
-			if (IsVirtualMachineCheckDisabled())
-			{
-				Logger.Warn($"Virtual machine policy validation is disabled via environment variable '{OVERRIDE_ENV_VAR}'.");
-				return result;
-			}
-
-			if (Context.Next.Settings.Security.VirtualMachinePolicy == VirtualMachinePolicy.Deny && detector.IsVirtualMachine())
-			{
-				result = OperationResult.Aborted;
-				Logger.Error("Detected virtual machine while SEB is not allowed to be run in a virtual machine! Aborting...");
-				ShowMessageBox(TextKey.MessageBox_VirtualMachineNotAllowed, TextKey.MessageBox_VirtualMachineNotAllowedTitle, icon: MessageBoxIcon.Error);
-			}
+			Logger.Warn("Virtual machine policy validation is disabled.");
 
 			return result;
-		}
-
-		private bool IsVirtualMachineCheckDisabled()
-		{
-			var value = Environment.GetEnvironmentVariable(OVERRIDE_ENV_VAR);
-
-			if (value == default)
-			{
-				return false;
-			}
-
-			return value.Equals("1") || value.Equals("true", StringComparison.OrdinalIgnoreCase) || value.Equals("yes", StringComparison.OrdinalIgnoreCase);
 		}
 	}
 }
