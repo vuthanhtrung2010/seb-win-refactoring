@@ -44,7 +44,8 @@ jobs:
       - name: Build x64 setup MSI
         shell: pwsh
         run: |
-          msbuild Setup\Setup.wixproj /m /p:Configuration=Release /p:Platform=x64 /p:SignOutput=false /p:BuildProjectReferences=false
+          $repoRoot = "$env:GITHUB_WORKSPACE\"
+          msbuild Setup\Setup.wixproj /m /p:Configuration=Release /p:Platform=x64 /p:SignOutput=false /p:BuildProjectReferences=false /p:RepoRoot="$repoRoot"
 
       - name: Build x86 dependencies
         shell: pwsh
@@ -64,12 +65,14 @@ jobs:
       - name: Build x86 setup MSI
         shell: pwsh
         run: |
-          msbuild Setup\Setup.wixproj /m /p:Configuration=Release /p:Platform=x86 /p:SignOutput=false /p:BuildProjectReferences=false
+          $repoRoot = "$env:GITHUB_WORKSPACE\"
+          msbuild Setup\Setup.wixproj /m /p:Configuration=Release /p:Platform=x86 /p:SignOutput=false /p:BuildProjectReferences=false /p:RepoRoot="$repoRoot"
 
       - name: Build x86 setup bundle
         shell: pwsh
         run: |
-          msbuild SetupBundle\SetupBundle.wixproj /m /p:Configuration=Release /p:Platform=x86 /p:SignOutput=false /p:BuildProjectReferences=false
+          $repoRoot = "$env:GITHUB_WORKSPACE\"
+          msbuild SetupBundle\SetupBundle.wixproj /m /p:Configuration=Release /p:Platform=x86 /p:SignOutput=false /p:BuildProjectReferences=false /p:RepoRoot="$repoRoot"
 
       - name: Upload MSI and bundle
         uses: actions/upload-artifact@v4
