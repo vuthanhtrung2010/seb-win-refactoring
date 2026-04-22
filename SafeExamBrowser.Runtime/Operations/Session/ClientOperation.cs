@@ -147,11 +147,11 @@ namespace SafeExamBrowser.Runtime.Operations.Session
 			{
 				candidates.Add(configuredPath);
 
-				if (configuredPath.Contains("\\Program Files\\", StringComparison.OrdinalIgnoreCase))
+				if (configuredPath.IndexOf("\\Program Files\\", StringComparison.OrdinalIgnoreCase) >= 0)
 				{
 					candidates.Add(configuredPath.Replace("\\Program Files\\", "\\Program Files (x86)\\"));
 				}
-				else if (configuredPath.Contains("\\Program Files (x86)\\", StringComparison.OrdinalIgnoreCase))
+				else if (configuredPath.IndexOf("\\Program Files (x86)\\", StringComparison.OrdinalIgnoreCase) >= 0)
 				{
 					candidates.Add(configuredPath.Replace("\\Program Files (x86)\\", "\\Program Files\\"));
 				}

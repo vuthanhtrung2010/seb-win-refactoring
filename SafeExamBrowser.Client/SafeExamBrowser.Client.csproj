@@ -268,10 +268,10 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>robocopy "$(SolutionDir)SafeExamBrowser.Browser\bin\$(PlatformName)\$(ConfigurationName)" "$(TargetDir)\" /e /np
+    <PostBuildEvent>robocopy "$(MSBuildProjectDirectory)\..\SafeExamBrowser.Browser\bin\$(PlatformName)\$(ConfigurationName)" "$(TargetDir)\" /e /np
 
 IF %25ERRORLEVEL%25 LSS 8 (
-    robocopy "$(TargetDir)\" "$(SolutionDir)SafeExamBrowser.Runtime\bin\$(PlatformName)\$(ConfigurationName)" /e /np
+    robocopy "$(TargetDir)\" "$(MSBuildProjectDirectory)\..\SafeExamBrowser.Runtime\bin\$(PlatformName)\$(ConfigurationName)" /e /np
 
     IF %25ERRORLEVEL%25 LSS 8 (
         EXIT 0
