@@ -7,6 +7,8 @@
  */
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
 using SafeExamBrowser.Communication.Contracts;
@@ -96,7 +98,7 @@ namespace SafeExamBrowser.Runtime.Operations.Session
 			var success = false;
 
 			var authenticationToken = Context.Next.ClientAuthenticationToken.ToString("D");
-			var executablePath = Context.Next.AppConfig.ClientExecutablePath;
+			var executablePath = ResolveClientExecutablePath();
 			var logFilePath = $"{'"' + Convert.ToBase64String(Encoding.UTF8.GetBytes(Context.Next.AppConfig.ClientLogFilePath)) + '"'}";
 			var logLevel = Context.Next.Settings.LogLevel.ToString();
 			var runtimeHostUri = Context.Next.AppConfig.RuntimeAddress;
@@ -134,6 +136,49 @@ namespace SafeExamBrowser.Runtime.Operations.Session
 			}
 
 			return success;
+		}
+
+		private string ResolveClientExecutablePath()
+		{
+			var configuredPath = Context.Next.AppConfig.ClientExecutablePath;
+			var candidates = new List<string>();
+
+			if (!string.IsNullOrWhiteSpace(configuredPath))
+			{
+				candidates.Add(configuredPath);
+
+				if (configuredPath.Contains("\\Program Files\\", StringComparison.OrdinalIgnoreCase))
+				{
+					candidates.Add(configuredPath.Replace("\\Program Files\\", "\\Program Files (x86)\\"));
+				}
+				else if (configuredPath.Contains("\\Program Files (x86)\\", StringComparison.OrdinalIgnoreCase))
+				{
+					candidates.Add(configuredPath.Replace("\\Program Files (x86)\\", "\\Program Files\\"));
+				}
+			}
+
+			var runtimeDirectory = AppDomain.CurrentDomain.BaseDirectory;
+
+			if (!string.IsNullOrWhiteSpace(runtimeDirectory))
+			{
+				candidates.Add(Path.Combine(runtimeDirectory, "SafeExamBrowser.Client.exe"));
+			}
+
+			foreach (var candidate in candidates)
+			{
+				if (!string.IsNullOrWhiteSpace(candidate) && File.Exists(candidate))
+				{
+					if (!candidate.Equals(configuredPath, StringComparison.OrdinalIgnoreCase))
+					{
+						Logger.Warn($"Client executable not found at configured path '{configuredPath}', using fallback '{candidate}'.");
+					}
+
+					return candidate;
+				}
+			}
+
+			Logger.Warn($"Client executable could not be resolved. Falling back to configured path '{configuredPath}'.");
+			return configuredPath;
 		}
 
 		private bool TryStartCommunication()
